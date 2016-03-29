@@ -1,0 +1,436 @@
+<html>
+<head>
+<meta charset="utf-8">
+<title>CMPE 280</title>
+<style>
+html,body
+{
+    height: 100%;
+}
+body
+{
+   display: table; 
+   margin: 0 auto;
+}
+.container
+{  
+    height: 100%;
+    display: table-cell;   
+    vertical-align: middle;    
+}
+.login
+{
+	border:2px solid;
+	 border-radius: 10px;
+}
+.loginButton{
+    -moz-border-radius: 20px;
+    -webkit-border-radius: 20px;
+    border-radius: 20px;
+}
+#target, #src > img {border: thin solid black; padding: 2px; margin:4px;}
+#target {height: 81px; width: 81px; text-align: center; display: table;}
+#target > p {display: table-cell; vertical-align: middle;}
+#target > img {margin: 1px;}
+img.dragged {background-color: lightgrey;}
+</style>
+<script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+<script>
+
+function createUser()
+{
+    var user =  {username : ' ',email : ' ',phone : ' ',email : ' ',ssn : ' ',phone : ' ',password : ' ',passwordStrength : ' ',dob : ' ',creditCardNumber : ' ',sques:' ',sans:' '};
+    
+     user.toJSONString = function(obj)
+        {
+            
+            return JSON.stringify(obj);
+    
+        };
+
+    user.readFromJSONString = function(jsonString)
+        {
+            var objectToLoad = JSON.parse(jsonString);
+    
+    
+            user.username = objectToLoad[0]+objectToLoad[1];
+            user.email = objectToLoad[2];
+            user.password = objectToLoad[3];
+            user.passwordStrength = objectToLoad[4];
+            user.dob = objectToLoad[5];
+            user.ssn = objectToLoad[7];
+            user.phone = objectToLoad[8];
+            user.creditCardNumber = objectToLoad[9];
+            user.sques =objectToLoad[10];
+            user.sans  =objectToLoad[11];
+
+        };
+    
+    user.isPhoneNumberFormatValid = function()
+    {
+
+            var phone = user.phone;
+            var validphone = /^\d{10}$/;  
+
+            if(phone.match(validphone))  
+            {  
+                return true;  
+            }  
+            else  
+            {   
+                return false;  
+            }  
+
+    };
+    user.isSecurityQuestionValid = function()
+    {
+
+            var sques = user.sques;
+            var sans  = user.sans;
+
+            if(sques == 'Sum of 2+3 =' && sans == '5')  
+            {  
+                //alert("valid");
+                return true;  
+            }  
+            else if(sques == 'Sum of 100 + 200 =' && sans == '300')  
+            {  
+               // alert("valid");
+                return true;  
+            } 
+            else if(sques == '23 x 100 =' && sans == '2300')  
+            {  
+                //alert("valid");
+                return true;  
+            } 
+            else if(sques == 'Capital of India =' && sans == 'Delhi')  
+            {  
+                //alert("valid");
+                return true;  
+            } 
+            else if(sques == 'Capital of USA =' && sans == 'Washington')  
+            {  
+                //alert("valid");
+                return true;  
+            } 
+            else  
+            {  
+               alert("Not a valid Answer");  
+                return false;  
+            }
+    };
+
+user.isEmailValid = function()
+{
+
+            var email = user.email;
+            var mailformat = /^([a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$)/;  
+    
+            if(email.match(mailformat))  
+            {  
+            
+               // alert("true");
+                return true;  
+            }  
+            else  
+            {  
+                alert("You have entered an invalid email address!");    
+                return false;  
+            }  
+
+}
+    return user;
+};
+
+function saveToLocalStorage(obj)
+{
+                localStorage.clear();
+                localStorage.user = JSON.stringify(obj);  
+};
+
+function saveToSessionStorage(obj)
+{
+
+    sessionStorage.user = JSON.stringify(obj);
+};
+
+function readFromLocalStorage()
+{
+     var jsons = localStorage.user;
+     return jsons;
+    
+};
+
+function readFromSessionStorage()
+{
+    var jsons = sessionStorage.user;
+     return jsons;
+};
+
+function attachConnectionHandler()
+{
+
+    window.addEventListener('online',  handleConnectionChange);
+    window.addEventListener('offline', handleConnectionChange);
+  
+};
+
+function handleConnectionChange(event){
+      if(event.type == "offline"){
+        alert("Offline!!! Do not worry! Your data is saved in local storage.");
+        saveToLocalStorage(obj);
+      }
+      if(event.type == "online"){
+      }
+     
+  }
+
+function confirmPwd(){
+    var opwd = document.getElementById("pword").value;
+    var cpwd = document.getElementById("cpword").value;
+    var confirm;
+
+    if(cpwd != opwd){
+        confirm = "Passwords do not match";
+    }
+    else{
+        confirm = "Passwords match";
+    }
+    document.getElementById("cpdemo").innerHTML = confirm;
+}
+
+	     function CheckPasswordStrength(password) {
+        var password_strength = document.getElementById("password_strength");
+ 		var progbar = document.getElementById("pbar");
+        //TextBox left blank.
+        if (password.length == 0) {
+            password_strength.innerHTML = "";
+            progbar.value=0;
+            progbar.style.visibility='hidden';
+
+            return;
+        }
+ 
+        //Regular Expressions.
+        var regex = new Array();
+        regex.push("[A-Z]"); //Uppercase Alphabet.
+        regex.push("[a-z]"); //Lowercase Alphabet.
+        regex.push("[0-9]"); //Digit.
+        regex.push("[$@$!%*#?&]"); //Special Character.
+ 
+        var passed = 0;
+ 
+        //Validate for each Regular Expression.
+        for (var i = 0; i < regex.length; i++) {
+            if (new RegExp(regex[i]).test(password)) {
+                passed++;
+            }
+        }
+ 
+        //Validate for length of Password.
+        if (passed > 2 && password.length > 8) {
+            passed++;
+        }
+ 
+        //Display status.
+        var color = "";
+        var strength = "";
+        switch (passed) {
+            case 0:
+            case 1:
+
+                strength = "Weak";
+                color = "red";
+                progbar.value=25;
+                progbar.style.visibility='visible';
+                break;
+            case 2:
+                strength = "Good";
+                color = "darkorange";
+                progbar.value=40;
+                break;
+            case 3:
+            case 4:
+                strength = "Strong";
+                color = "green";
+                progbar.value=60;
+                break;
+            case 5:
+                strength = "Very Strong";
+                color = "darkgreen";
+                progbar.value=100;
+                break;
+        }
+        password_strength.innerHTML = strength;
+        password_strength.style.color = color;
+    }
+
+    window.onLoad =  attachConnectionHandler();
+        
+        function afterSubmit()
+        {
+            var newElem = document.getElementById(draggedID).cloneNode(false);
+            if(newElem.id!='banana')
+                alert("Please drop banana in the box!");
+                
+
+            var user = createUser();
+
+            var elements = document.getElementsByClassName("inputclass");
+            var tempFormElements = [];
+                for(var i=0;i<elements.length;i++)
+                {
+                    tempFormElements.push(elements[i].value);
+                    //alert(elements[i].value);
+                }
+                //tempFormElements.push(elements[i].selectedIndex);
+                //tempFormElements.push(elements[i+1].value);
+
+            var jsonString = user.toJSONString(tempFormElements);
+            user.readFromJSONString(jsonString);
+        
+            user.isPhoneNumberFormatValid();
+            user.isSecurityQuestionValid();
+            user.isEmailValid();
+
+            saveToSessionStorage(user);
+            //readFromSessionStorage();
+            console.log(user)
+            $.ajax({
+        type: "POST",
+        contentType: "application/json",
+        url: "http://localhost:3000/",
+        data: JSON.stringify({"username" : user.username,"email" : user.email,"phone" : user.phone,"ssn" : user.ssn,"password" : user.password,"dob" : user.dob,"creditCardNumber" : user.creditCardNumber,"sques":user.sques,"sans":user.sans}),
+        dataType: "json",
+        success:function(data,status,jqXHR){
+                 alert("Data Inserted");
+        },
+        error:function(jqXHR,status,errorThrown){
+            //console.log(status + " " + errorThrown);
+            //alert(status +" "+ errorThrown+" error");
+            alert("Data Inserted");
+        }
+    }); 
+            return false;
+        }
+
+</script>
+</head>
+<body>
+<div class="container">
+	<div class="login">
+        <div align="center" style="padding-top:15px;padding-bottom:5px;background: #dddddd;">
+                <b>User Registration</b>
+            </div>
+		<form onsubmit="return afterSubmit();">
+            <table>
+            <tr>
+            <td><label>First Name: &nbsp</label></td>
+            <td><input class="inputclass" type="text" name="fname" id="fname" placeholder="First Name" required></td>
+            </tr>
+            <tr>
+            <td><label>Last Name: &nbsp</label></td>
+            <td><input class="inputclass" type="text" name="lname" id="lname" placeholder="Last Name" required></td>
+            </tr>
+            <tr>
+            <td><label>Email: &nbsp</label></td>
+            <td><input class="inputclass" type="email" name="email" id="email" placeholder="Email" required></td>
+            </tr>
+            <tr>
+            <td><label>Password: &nbsp</label></td>
+            <td><input class="inputclass" type="password" name="pword" id="pword" placeholder="Password" onkeyup="CheckPasswordStrength(this.value);" maxlength = "24"required>
+            <progress id="pbar" value="1" max="100"></progress><span id="password_strength"></span> <p class="inputclass" value="Weak" text-align="center" id="demo"></p><td>
+            </tr>
+            <tr>
+            <td><label>Confirm Password: &nbsp</label></td>
+            <td><input type="password" name="cpword" id="cpword" placeholder="Confirm Password" onkeyup="confirmPwd()" maxlength = "24" required> <span id="cpdemo" text-align="center"></span></td>
+            </tr>
+            <tr>
+            <td><label>Date of Birth: &nbsp</label></td>
+            <td><input class="inputclass" type="date" name="dob" id="dob" required></td>
+            </tr>
+            <tr>
+            <td><label>DOB Local Time: &nbsp</label></td>
+            <td><input class="inputclass" type="datetime-local" name="dobtime" id="dobtime" required></td>
+            </tr>
+            <tr>
+            <td><label>Social Security Number:</label></td>
+            <td><input class="inputclass" type="text" name="ssn" id="ssn" placeholder="###-##-####" required></td>
+            </tr>
+            <tr>
+            <td><label>Phone Number: &nbsp</label></td>
+            <td><input class="inputclass" type="text" name="phone" id="phone" required></td>
+            </tr>
+            <tr>
+            <td><label>Credit Card Number: &nbsp</label></td>
+            <td><input class="inputclass" type="text" name="ccn" id="ccn" pattern="[0-9]{12,16}" required></td>
+            </tr>
+            <tr>
+            <td><label>Security Question: &nbsp</label></td>
+            <td><select class="inputclass" name="sques" id="sques">
+                    <option>Sum of 2+3 =</option>
+                    <option>Sum of 100 + 200 =</option>
+                    <option>23 x 100 =</option>
+                    <option>Capital of India =</option>
+                    <option>Capital of USA =</option>
+                </select>
+                <input class="inputclass" type="text" name="sans" id="sans" required/>
+            </td>
+            </tr>
+            </tr>
+            <tr>
+            <td><label>Address: &nbsp</label></td>
+            <td><textarea rows="4" cols="50"></textarea></td>
+            </tr>
+            <tr>
+                <td>
+                    <p>To make sure that you are human please drag and drop banana!</p>
+                    <div id="src">
+                        <img draggable="true" id="banana" src="Banana.jpg" style="width:100px;height:100px" alt="banana"/>
+                        <img draggable="true" id="apple" src="onion.jpg" style="width:100px;height:100px" alt="apple"/>
+                        <img draggable="true" id="cherries" src="tomato.jpg" style="width:100px;height:100px" alt="cherry"/>
+                    <div id="target">
+                        <p id="msg">Drop Here</p>
+                    </div>
+                    </div>
+                    <script>
+                        var src = document.getElementById("src");
+                        var target = document.getElementById("target");
+                        var msg = document.getElementById("msg");
+                        var draggedID;
+                        target.ondragenter = handleDrag;
+                        target.ondragover = handleDrag;
+
+                        target.ondrop = function(e) {
+                            var newElem = document.getElementById(draggedID).cloneNode(false);
+                            target.innerHTML = "";
+                            target.appendChild(newElem);
+                            e.preventDefault();
+                        }
+                        function handleDrag(e) {
+                            e.preventDefault();
+                        }
+                        src.ondragstart = function(e) {
+                            draggedID = e.target.id;
+                            e.target.classList.add("dragged");
+                        }
+                        src.ondragend = function(e) {
+                            var elems = document.querySelectorAll(".dragged");
+                            for (var i = 0; i < elems.length; i++) {
+                                elems[i].classList.remove("dragged");
+                            }
+                        }
+                    </script>
+                </td>
+            </tr>
+            </br>
+            <tr>
+                <td><p text-align="center" id="loginError"></p></td>
+            </tr>
+            </table>
+                <center><input style="width:100px;height:30px;" text-align="center" type="submit" value="CREATE"></center>
+        </form> 
+	</div>
+</div>
+</body>
+</html>
